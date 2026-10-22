@@ -1,0 +1,74 @@
+openapi: 3.1.0
+info:
+  title: Internal Speaker Diarization Sidecar API
+  version: 1.0.0
+  description: Private internal pyannote.audio sidecar service for speaker diarization.
+paths:
+  /healthz:
+    get:
+      summary: Sidecar liveness probe
+      responses:
+        "200":
+          description: Service is healthy
+  /readyz:
+    get:
+      summary: Sidecar readiness probe
+      responses:
+        "200":
+          description: Sidecar is configured and ready
+  /v1/diarize:
+    post:
+      summary: Perform speaker diarization on normalized 16 kHz mono WAV audio
+      parameters:
+        - in: header
+          name: X-Internal-Token
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: X-Correlation-ID
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiarizeRequest"
+      responses:
+        "200":
+          description: Normalized speaker turns in milliseconds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Turn"
+        "401":
+          description: Invalid or missing internal token
+        "503":
+          description: Diarization unavailable
+components:
+  schemas:
+    DiarizeRequest:
+      type: object
+      properties:
+        audio_path:
+          type: string
+          description: Shared volume path to normalized WAV file
+        audio_key:
+          type: string
+          description: Private object-store artifact key for normalized WAV file
+    Turn:
+      type: object
+      required: [start_ms, end_ms, speaker]
+      properties:
+        start_ms:
+          type: integer
+          minimum: 0
+        end_ms:
+          type: integer
+          minimum: 0
+        speaker:
+          type: string

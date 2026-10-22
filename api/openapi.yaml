@@ -1,0 +1,240 @@
+openapi: 3.1.0
+info:
+  title: Web Utilities - Video Transcription API
+  version: 1.0.0
+  description: Durable video transcription, speaker diarization, and non-destructive Gemini formatting API.
+paths:
+  /healthz:
+    get:
+      summary: Liveness probe
+      responses:
+        "200":
+          description: Service is alive
+  /readyz:
+    get:
+      summary: Readiness probe
+      responses:
+        "200":
+          description: Database and storage dependencies are ready
+        "503":
+          description: Service not ready
+  /metrics:
+    get:
+      summary: Operational metrics
+      responses:
+        "200":
+          description: Prometheus and JSON metrics snapshot
+  /api/v1/utilities:
+    get:
+      summary: List registered web utilities
+      responses:
+        "200":
+          description: Registered utilities
+  /api/v1/transcription/jobs:
+    post:
+      summary: Submit a video URL for transcription
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitJobRequest"
+      responses:
+        "202":
+          description: Job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranscriptionJob"
+        "400":
+          description: Invalid or disallowed URL
+        "429":
+          description: Rate limit exceeded
+  /api/v1/transcription/jobs/{id}:
+    get:
+      summary: Get job status, original segments, and formatted previews
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Job status and transcript data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranscriptionJob"
+        "404":
+          description: Job not found
+  /api/v1/transcription/jobs/{id}/cancel:
+    post:
+      summary: Cancel an in-progress transcription job
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Job cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranscriptionJob"
+  /api/v1/transcription/jobs/{id}/retry:
+    post:
+      summary: Retry a failed transcription job
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Job re-queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranscriptionJob"
+        "409":
+          description: Job is not in a retryable state
+  /api/v1/transcription/jobs/{id}/formatted-transcripts:
+    get:
+      summary: List formatted transcript previews for a job
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Formatted transcript versions
+    post:
+      summary: Generate a non-destructive Gemini Flash formatted preview
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                preset:
+                  $ref: "#/components/schemas/FormatPreset"
+      responses:
+        "202":
+          description: Formatted preview created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FormattedTranscript"
+        "409":
+          description: Original transcript is not yet completed
+  /api/v1/transcription/jobs/{id}/events:
+    get:
+      summary: Retrieve published job lifecycle events
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Job lifecycle events
+components:
+  schemas:
+    SubmitJobRequest:
+      type: object
+      required: [source_url]
+      properties:
+        source_url:
+          type: string
+          format: uri
+        idempotency_key:
+          type: string
+    JobPhase:
+      type: string
+      enum: [queued, resolving, downloading, transcribing, diarizing, merging, completed, failed, cancelled]
+    FormatPreset:
+      type: string
+      enum: [meeting-notes, clean-transcript, summary]
+    TranscriptSegment:
+      type: object
+      required: [start_ms, end_ms, speaker, text]
+      properties:
+        id:
+          type: string
+        start_ms:
+          type: integer
+        end_ms:
+          type: integer
+        speaker:
+          type: string
+        text:
+          type: string
+    FormattedTranscript:
+      type: object
+      required: [id, preset, content]
+      properties:
+        id:
+          type: string
+          format: uuid
+        preset:
+          $ref: "#/components/schemas/FormatPreset"
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    TranscriptionJob:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/JobPhase"
+        phase:
+          type: string
+        progress:
+          type: integer
+        message:
+          type: string
+        error_code:
+          type: string
+        error_message:
+          type: string
+        retryable:
+          type: boolean
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/TranscriptSegment"
+        formatted_transcripts:
+          type: array
+          items:
+            $ref: "#/components/schemas/FormattedTranscript"
