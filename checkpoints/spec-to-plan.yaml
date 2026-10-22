@@ -1,0 +1,81 @@
+# Spec-to-Plan Traceability Checkpoint
+metadata:
+  generated: "2026-10-18"
+  source_spec: "User-provided MVP requirements"
+  target_plan: "plan.md"
+summary:
+  total_requirements: 8
+  covered_requirements: 8
+  missing_requirements: 0
+  coverage_percentage: 100.0
+requirements:
+  - req_id: "REQ-001"
+    req_description: "Submit a direct or supported platform video URL"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-3"
+      phase_name: "Submit and receive speaker-attributed transcript"
+      items: [{item_id: "3.2", description: "Present submission progress and original transcript"}]
+    notes: "Source acquisition is implemented in 2.2."
+  - req_id: "REQ-002"
+    req_description: "Download and normalize media asynchronously with FFmpeg"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-2"
+      phase_name: "Foundational pipeline and persistence"
+      items: [{item_id: "2.2", description: "Build a safe media acquisition service"}]
+    notes: "Durable job state is implemented in 2.1."
+  - req_id: "REQ-003"
+    req_description: "Transcribe normalized audio through whisper.cpp Go bindings"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-3"
+      phase_name: "Submit and receive speaker-attributed transcript"
+      items: [{item_id: "3.1", description: "Transcribe and diarize completed audio"}]
+    notes: ""
+  - req_id: "REQ-004"
+    req_description: "Show timestamped speaker-attributed original transcript"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-3"
+      phase_name: "Submit and receive speaker-attributed transcript"
+      items: [{item_id: "3.1", description: "Transcribe and diarize completed audio"}, {item_id: "3.2", description: "Present submission progress and original transcript"}]
+    notes: ""
+  - req_id: "REQ-005"
+    req_description: "Expose reformat action after transcript completion"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-4"
+      phase_name: "Create an editable Gemini-formatted preview"
+      items: [{item_id: "4.1", description: "Generate and preserve formatted transcript versions"}]
+    notes: ""
+  - req_id: "REQ-006"
+    req_description: "Use Gemini Flash without replacing the original transcript"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-4"
+      phase_name: "Create an editable Gemini-formatted preview"
+      items: [{item_id: "4.1", description: "Generate and preserve formatted transcript versions"}]
+    notes: ""
+  - req_id: "REQ-007"
+    req_description: "Report durable progress, cancellation, retries, and safe failures"
+    priority: "P1"
+    plan_mapping:
+      phase: "Phase-2"
+      phase_name: "Foundational pipeline and persistence"
+      items: [{item_id: "2.1", description: "Persist transcription jobs and pipeline state"}]
+    notes: "Worker and UI coverage are added in 3.1 and 3.2."
+  - req_id: "REQ-008"
+    req_description: "Allow future utilities with secure observable operation"
+    priority: "P2"
+    plan_mapping:
+      phase: "Phase-1"
+      phase_name: "Setup"
+      items: [{item_id: "1.1", description: "Create the multi-utility application foundation"}]
+    notes: "Operational controls are completed in 5.1."
+missing_requirements: []
+orphan_plan_items: []
+validation:
+  passed: true
+  errors: []
+  warnings: []

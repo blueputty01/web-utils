@@ -1,0 +1,84 @@
+# Plan-to-Tasks Traceability Checkpoint
+metadata:
+  generated: "2026-10-18"
+  source_plan: "plan.md"
+  target_tasks: "plan.md"
+summary:
+  total_plan_items: 7
+  covered_plan_items: 7
+  missing_plan_items: 0
+  coverage_percentage: 100.0
+  total_tasks_generated: 34
+  orphan_tasks: 0
+phases:
+  - phase_id: "Phase-1"
+    phase_name: "Setup"
+    items:
+      - item_id: "1.1"
+        description: "Create the multi-utility application foundation"
+        tasks: [{task_id: "T001"}, {task_id: "T002"}, {task_id: "T003"}, {task_id: "T004"}, {task_id: "T005"}]
+  - phase_id: "Phase-2"
+    phase_name: "Foundational pipeline and persistence"
+    items:
+      - item_id: "2.1"
+        description: "Persist transcription jobs and pipeline state"
+        tasks: [{task_id: "T006"}, {task_id: "T007"}, {task_id: "T008"}, {task_id: "T009"}]
+      - item_id: "2.2"
+        description: "Build a safe media acquisition service"
+        tasks: [{task_id: "T010"}, {task_id: "T011"}, {task_id: "T012"}, {task_id: "T013"}]
+  - phase_id: "Phase-3"
+    phase_name: "Submit and receive speaker-attributed transcript"
+    items:
+      - item_id: "3.1"
+        description: "Transcribe and diarize completed audio"
+        tasks: [{task_id: "T014"}, {task_id: "T015"}, {task_id: "T016"}, {task_id: "T017"}, {task_id: "T018"}, {task_id: "T019"}]
+      - item_id: "3.2"
+        description: "Present submission progress and original transcript"
+        tasks: [{task_id: "T020"}, {task_id: "T021"}, {task_id: "T022"}, {task_id: "T023"}]
+  - phase_id: "Phase-4"
+    phase_name: "Create an editable Gemini-formatted preview"
+    items:
+      - item_id: "4.1"
+        description: "Generate and preserve formatted transcript versions"
+        tasks: [{task_id: "T024"}, {task_id: "T025"}, {task_id: "T026"}, {task_id: "T027"}, {task_id: "T028"}]
+  - phase_id: "Phase-5"
+    phase_name: "Cross-cutting quality and delivery"
+    items:
+      - item_id: "5.1"
+        description: "Validate critical flows, operations, and deployment"
+        tasks: [{task_id: "T029"}, {task_id: "T030"}, {task_id: "T031"}, {task_id: "T032"}, {task_id: "T033"}, {task_id: "T034"}]
+missing_plan_items: []
+orphan_tasks: []
+upstream_trace:
+  - plan_item: "1.1"
+    source_requirements: ["REQ-001", "REQ-008"]
+    tasks: ["T001", "T002", "T003", "T004", "T005"]
+    full_trace: "REQ-001,REQ-008 → Phase-1.1 → T001,T002,T003,T004,T005"
+  - plan_item: "2.1"
+    source_requirements: ["REQ-002", "REQ-003", "REQ-007", "REQ-008"]
+    tasks: ["T006", "T007", "T008", "T009"]
+    full_trace: "REQ-002,REQ-003,REQ-007,REQ-008 → Phase-2.1 → T006,T007,T008,T009"
+  - plan_item: "2.2"
+    source_requirements: ["REQ-001", "REQ-002", "REQ-008"]
+    tasks: ["T010", "T011", "T012", "T013"]
+    full_trace: "REQ-001,REQ-002,REQ-008 → Phase-2.2 → T010,T011,T012,T013"
+  - plan_item: "3.1"
+    source_requirements: ["REQ-002", "REQ-003", "REQ-004", "REQ-007"]
+    tasks: ["T014", "T015", "T016", "T017", "T018", "T019"]
+    full_trace: "REQ-002,REQ-003,REQ-004,REQ-007 → Phase-3.1 → T014,T015,T016,T017,T018,T019"
+  - plan_item: "3.2"
+    source_requirements: ["REQ-001", "REQ-004", "REQ-007"]
+    tasks: ["T020", "T021", "T022", "T023"]
+    full_trace: "REQ-001,REQ-004,REQ-007 → Phase-3.2 → T020,T021,T022,T023"
+  - plan_item: "4.1"
+    source_requirements: ["REQ-005", "REQ-006", "REQ-007", "REQ-008"]
+    tasks: ["T024", "T025", "T026", "T027", "T028"]
+    full_trace: "REQ-005,REQ-006,REQ-007,REQ-008 → Phase-4.1 → T024,T025,T026,T027,T028"
+  - plan_item: "5.1"
+    source_requirements: ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007", "REQ-008"]
+    tasks: ["T029", "T030", "T031", "T032", "T033", "T034"]
+    full_trace: "REQ-001,REQ-002,REQ-003,REQ-004,REQ-005,REQ-006,REQ-007,REQ-008 → Phase-5.1 → T029,T030,T031,T032,T033,T034"
+validation:
+  passed: true
+  errors: []
+  warnings: []

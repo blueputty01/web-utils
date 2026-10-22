@@ -1,0 +1,53 @@
+batch_id: "B01"
+completed_tasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007", "T008", "T009", "T010", "T011", "T012", "T013", "T014", "T015", "T016", "T017", "T018", "T019", "T020", "T021", "T022", "T023", "T024", "T025", "T026", "T027", "T028", "T029", "T030", "T031", "T032", "T033", "T034"]
+blocked_tasks: []
+files_changed:
+  T001: [{file: "backend/go.mod", change_type: "created", description: "Created Go API, worker, and object-store module."}]
+  T002: [{file: "frontend/", change_type: "created", description: "Created SvelteKit utility SPA and API proxy hook."}]
+  T003: [{file: "services/diarization/app/main.py", change_type: "created", description: "Created pyannote FastAPI sidecar with object-store support."}]
+  T004: [{file: "compose.yaml", change_type: "modified", description: "Defined complete Docker Compose service topology with healthchecks and private object storage."}]
+  T005: [{file: "backend/internal/config/config.go", change_type: "created", description: "Added configuration, secret-file loading, and utility registry."}]
+  T006: [{file: "backend/migrations/001_initial.sql", change_type: "created", description: "Created PostgreSQL job and transcript schema."}]
+  T007: [{file: "backend/internal/transcription/store.go", change_type: "modified", description: "Implemented transactional job claiming, completion, cancel, retry, and retention cleanup."}]
+  T008: [{file: "backend/cmd/api/main.go", change_type: "modified", description: "Implemented transcription API handlers and OpenAPI contract."}]
+  T009: [{file: "backend/internal/transcription/service.go", change_type: "created", description: "Added event publication broker, polling DTOs, and bounded retention cleanup."}]
+  T010: [{file: "backend/internal/media/validate.go", change_type: "created", description: "Implemented URL normalization, host allowlists, DNS/IP denial, and redirect safety."}]
+  T012: [{file: "backend/internal/storage/storage.go", change_type: "created", description: "Implemented private S3-compatible object-store client, WAV verification, and TTL cleanup."}]
+  T014: [{file: "backend/internal/transcription/whisper.go", change_type: "modified", description: "Added native whisper.cpp binding adapter."}]
+  T015: [{file: "api/diarization.openapi.yaml", change_type: "created", description: "Added internal diarization OpenAPI specification."}]
+  T016: [{file: "services/diarization/app/main.py", change_type: "modified", description: "Added pyannote diarization endpoint and object-store artifact retrieval."}]
+  T018: [{file: "backend/internal/transcription/merge.go", change_type: "created", description: "Added overlap-based speaker turn merging."}]
+  T024: [{file: "api/openapi.yaml", change_type: "created", description: "Added public API OpenAPI specification."}]
+  T025: [{file: "backend/internal/format/gemini.go", change_type: "modified", description: "Added server-side Gemini Flash client and preset validation."}]
+  T029: [{file: "backend/internal/transcription/service_test.go", change_type: "created", description: "Added Go unit tests for media, storage, merging, state transitions, and Gemini formatting."}]
+  T030: [{file: "services/diarization/tests/test_main.py", change_type: "created", description: "Added pytest suite for diarization auth, normalization, and object-store retrieval."}]
+  T031: [{file: "frontend/src/lib/transcription/FormattedPreview.test.ts", change_type: "created", description: "Added Svelte component and store unit tests."}]
+  T032: [{file: "frontend/e2e/video-transcription.spec.ts", change_type: "created", description: "Added Playwright and live Compose E2E journey tests."}]
+  T033: [{file: "backend/internal/observability/observability.go", change_type: "created", description: "Added metrics, correlation ID tracing, rate limiting, and runbook."}]
+  T034: [{file: ".github/workflows/ci.yml", change_type: "created", description: "Hardened multi-stage Dockerfiles, Compose runtime, and CI workflow."}]
+upstream_artifacts_consumed:
+  T001: [{artifact: "plan.md", used_for: "Go module, executable, and container architecture."}]
+  T012: [{artifact: "plan.md", used_for: "Private object-store artifact storage and TTL policy."}]
+  T014: [{artifact: "plan.md", used_for: "Whisper binding and normalized WAV requirements."}]
+  T025: [{artifact: "plan.md", used_for: "Non-destructive Gemini formatted-preview requirement."}]
+evidence_mapping:
+  T012: [{upstream: "plan.md#Step 2.2", output: "backend/internal/storage/storage.go", evidence: "Go storage unit tests and live Compose worker/diarization S3 roundtrip pass."}]
+  T014: [{upstream: "plan.md#Step 3.1", output: "backend/internal/transcription/whisper.go", evidence: "Multi-stage Docker image builds worker with native whisper.cpp CGO bindings."}]
+  T025: [{upstream: "plan.md#Step 4.1", output: "backend/internal/format/gemini.go", evidence: "Go test suite and E2E formatted-preview journey pass."}]
+traceability:
+  - {requirement: "REQ-001", plan_item: "2.2", task: "T010", files: ["backend/internal/media/validate.go", "backend/internal/media/media.go"], status: "completed"}
+  - {requirement: "REQ-002", plan_item: "2.2", task: "T012", files: ["backend/internal/storage/storage.go", "backend/cmd/worker/main.go"], status: "completed"}
+  - {requirement: "REQ-003", plan_item: "3.1", task: "T014", files: ["backend/internal/transcription/whisper.go"], status: "completed"}
+  - {requirement: "REQ-004", plan_item: "3.2", task: "T023", files: ["frontend/src/lib/transcription/TranscriptViewer.svelte"], status: "completed"}
+  - {requirement: "REQ-005", plan_item: "4.1", task: "T027", files: ["frontend/src/lib/transcription/FormattedPreview.svelte"], status: "completed"}
+  - {requirement: "REQ-006", plan_item: "4.1", task: "T025", files: ["backend/internal/format/gemini.go"], status: "completed"}
+  - {requirement: "REQ-007", plan_item: "2.1", task: "T009", files: ["backend/internal/transcription/service.go", "backend/internal/transcription/store.go"], status: "completed"}
+  - {requirement: "REQ-008", plan_item: "5.1", task: "T033", files: ["backend/internal/observability/observability.go", "compose.yaml"], status: "completed"}
+protocol_violation: false
+errors: []
+warnings: []
+test_results:
+  T029: {command: "docker run --rm -v $PWD/backend:/src -w /src golang:1.24-alpine go test -v ./...", passed: 12, failed: 0, skipped: 0, failures: []}
+  T030: {command: "docker run --rm web-utils-diarization pytest -v", passed: 4, failed: 0, skipped: 0, failures: []}
+  T031: {command: "docker run --rm web-utils-frontend npm test", passed: 6, failed: 0, skipped: 0, failures: []}
+  T032: {command: "docker compose exec -T frontend npm run test:e2e", passed: 5, failed: 0, skipped: 0, failures: []}

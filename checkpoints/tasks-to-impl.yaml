@@ -1,0 +1,70 @@
+metadata:
+  generated: "2026-10-18"
+  source_tasks: "plan.md"
+  last_updated: "2026-10-21"
+summary:
+  total_tasks: 34
+  completed_tasks: 34
+  in_progress_tasks: 0
+  pending_tasks: 0
+  completion_percentage: 100.0
+tasks:
+  - task_id: "T001"
+    description: "Create Go module and API/worker layout"
+    status: "completed"
+    implementation: {files_changed: [{file: "backend/go.mod", changes: [{change_type: "added", description: "Go module created"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker run --rm -v $PWD/backend:/src -w /src golang:1.24-alpine go test ./...", passed: 12, failed: 0, skipped: 0, failures: []}, notes: ""}
+    upstream_trace: {plan_item: "1.1", requirements: ["REQ-001", "REQ-008"], full_trace: "REQ-001,REQ-008 → Phase-1.1 → T001 → backend/go.mod"}
+  - task_id: "T009"
+    description: "Event publication and retention cleanup"
+    status: "completed"
+    implementation: {files_changed: [{file: "backend/internal/transcription/service.go", changes: [{change_type: "added", description: "Event broker, polling DTOs, and retention cleanup added"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker run --rm -v $PWD/backend:/src -w /src golang:1.24-alpine go test ./...", passed: 12, failed: 0, skipped: 0, failures: []}, notes: ""}
+    upstream_trace: {plan_item: "2.1", requirements: ["REQ-007", "REQ-008"], full_trace: "REQ-007,REQ-008 → Phase-2.1 → T009 → backend/internal/transcription/service.go"}
+  - task_id: "T012"
+    description: "Private object-store artifact implementation"
+    status: "completed"
+    implementation: {files_changed: [{file: "backend/internal/storage/storage.go", changes: [{change_type: "added", description: "S3-compatible artifact store, WAV verification, and TTL cleanup implemented"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker run --rm -v $PWD/backend:/src -w /src golang:1.24-alpine go test ./...", passed: 12, failed: 0, skipped: 0, failures: []}, notes: "Verified in Compose with worker and diarization."}
+    upstream_trace: {plan_item: "2.2", requirements: ["REQ-002", "REQ-008"], full_trace: "REQ-002,REQ-008 → Phase-2.2 → T012 → backend/internal/storage/storage.go"}
+  - task_id: "T014"
+    description: "Implement Whisper adapter"
+    status: "completed"
+    implementation: {files_changed: [{file: "backend/internal/transcription/whisper.go", changes: [{change_type: "modified", description: "whisper.cpp CGO adapter built in multi-stage Dockerfile"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker build -t web-utils-backend ./backend", passed: 1, failed: 0, skipped: 0, failures: []}, notes: "Native whisper.cpp build verified in Docker."}
+    upstream_trace: {plan_item: "3.1", requirements: ["REQ-003"], full_trace: "REQ-003 → Phase-3.1 → T014 → backend/internal/transcription/whisper.go"}
+  - task_id: "T025"
+    description: "Implement Gemini client"
+    status: "completed"
+    implementation: {files_changed: [{file: "backend/internal/format/gemini.go", changes: [{change_type: "modified", description: "Gemini Flash REST client and preset normalization added"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker run --rm -v $PWD/backend:/src -w /src golang:1.24-alpine go test ./...", passed: 12, failed: 0, skipped: 0, failures: []}, notes: ""}
+    upstream_trace: {plan_item: "4.1", requirements: ["REQ-006"], full_trace: "REQ-006 → Phase-4.1 → T025 → backend/internal/format/gemini.go"}
+  - task_id: "T030"
+    description: "Python diarization tests"
+    status: "completed"
+    implementation: {files_changed: [{file: "services/diarization/tests/test_main.py", changes: [{change_type: "added", description: "Pytest suite for auth, turn normalization, and object-store retrieval"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker run --rm web-utils-diarization pytest -v", passed: 4, failed: 0, skipped: 0, failures: []}, notes: ""}
+    upstream_trace: {plan_item: "5.1", requirements: ["REQ-004", "REQ-008"], full_trace: "REQ-004,REQ-008 → Phase-5.1 → T030 → services/diarization/tests/test_main.py"}
+  - task_id: "T032"
+    description: "Playwright and E2E journey tests"
+    status: "completed"
+    implementation: {files_changed: [{file: "frontend/e2e/video-transcription.spec.ts", changes: [{change_type: "added", description: "Playwright and live Compose E2E user journey suite added"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker compose exec -T frontend npm run test:e2e", passed: 5, failed: 0, skipped: 0, failures: []}, notes: ""}
+    upstream_trace: {plan_item: "5.1", requirements: ["REQ-001", "REQ-004", "REQ-005", "REQ-006", "REQ-007"], full_trace: "REQ-001..REQ-007 → Phase-5.1 → T032 → frontend/e2e/video-transcription.spec.ts"}
+  - task_id: "T034"
+    description: "Docker image runtime validation"
+    status: "completed"
+    implementation: {files_changed: [{file: "compose.yaml", changes: [{change_type: "modified", description: "Validated multi-stage images, healthchecks, and Compose runtime"}]}]}
+    verification: {build_passed: true, test_results: {command: "docker compose up -d --build --wait", passed: 6, failed: 0, skipped: 0, failures: []}, notes: "All 6 services healthy and verified."}
+    upstream_trace: {plan_item: "5.1", requirements: ["REQ-008"], full_trace: "REQ-008 → Phase-5.1 → T034 → compose.yaml"}
+pending_tasks: []
+untracked_changes: []
+traceability_chain:
+  - {chain_id: "TRACE-001", requirement: "REQ-001", plan_phase: "Phase-2", plan_item: "2.2", tasks: ["T010", "T011", "T012", "T013"], files: ["backend/internal/media/validate.go", "backend/internal/media/media.go", "backend/internal/storage/storage.go"], status: "complete"}
+  - {chain_id: "TRACE-002", requirement: "REQ-003", plan_phase: "Phase-3", plan_item: "3.1", tasks: ["T014", "T015", "T016", "T017", "T018", "T019"], files: ["backend/internal/transcription/whisper.go", "backend/internal/transcription/merge.go", "services/diarization/app/main.py"], status: "complete"}
+  - {chain_id: "TRACE-003", requirement: "REQ-006", plan_phase: "Phase-4", plan_item: "4.1", tasks: ["T024", "T025", "T026", "T027", "T028"], files: ["backend/internal/format/gemini.go", "frontend/src/lib/transcription/FormattedPreview.svelte"], status: "complete"}
+validation:
+  passed: true
+  errors: []
+  warnings: []
+  blocking_issues: []
