@@ -1,0 +1,43 @@
+services:
+  api:
+    environment:
+      LOG_LEVEL: debug
+      FAKE_PIPELINE: "${FAKE_PIPELINE:-true}"
+  worker:
+    environment:
+      LOG_LEVEL: debug
+      FAKE_PIPELINE: "${FAKE_PIPELINE:-true}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+  diarization:
+    environment:
+      FAKE_PIPELINE: "${FAKE_PIPELINE:-true}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+  diarization-gpu:
+    build:
+      context: ./services/diarization
+      args:
+        INSTALL_PYANNOTE: "true"
+    profiles: [gpu]
+    environment:
+      HF_TOKEN: "${HF_TOKEN:-}"
+      INTERNAL_TOKEN: "${INTERNAL_TOKEN:-development-only}"
+      OBJECT_STORE_ENDPOINT: "http://object-store:9000"
+      OBJECT_STORE_BUCKET: "${OBJECT_STORE_BUCKET:-artifacts}"
+      OBJECT_STORE_ACCESS_KEY: "${OBJECT_STORE_ACCESS_KEY:-webutils}"
+      OBJECT_STORE_SECRET_KEY: "${OBJECT_STORE_SECRET_KEY:-change-me-in-production}"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks: [private]

@@ -1,0 +1,144 @@
+services:
+  frontend:
+    build: ./frontend
+    environment:
+      API_INTERNAL_URL: "http://api:8080"
+    ports: ["3000:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/utilities/video-transcription"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [public, private]
+
+  api:
+    build: ./backend
+    command: ["/app/api"]
+    environment:
+      DATABASE_URL: "postgres://webutils:webutils@postgres:5432/webutils?sslmode=disable"
+      CORS_ORIGIN: "http://localhost:3000"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      OBJECT_STORE_ENDPOINT: "http://object-store:9000"
+      OBJECT_STORE_BUCKET: "${OBJECT_STORE_BUCKET:-artifacts}"
+      OBJECT_STORE_ACCESS_KEY: "${OBJECT_STORE_ACCESS_KEY:-webutils}"
+      OBJECT_STORE_SECRET_KEY: "${OBJECT_STORE_SECRET_KEY:-change-me-in-production}"
+      ARTIFACT_TTL: "${ARTIFACT_TTL:-1h}"
+      RETENTION_WINDOW: "${RETENTION_WINDOW:-168h}"
+    ports: ["8080:8080"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      object-store:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    read_only: true
+    tmpfs: [/tmp]
+    networks: [public, private]
+
+  worker:
+    build: ./backend
+    command: ["/app/worker"]
+    environment:
+      DATABASE_URL: "postgres://webutils:webutils@postgres:5432/webutils?sslmode=disable"
+      DIARIZATION_URL: "http://diarization:8000"
+      INTERNAL_TOKEN: "${INTERNAL_TOKEN:-development-only}"
+      WORK_DIR: /work
+      WHISPER_MODEL_PATH: "${WHISPER_MODEL_PATH:-/models/ggml-base.en.bin}"
+      OBJECT_STORE_ENDPOINT: "http://object-store:9000"
+      OBJECT_STORE_BUCKET: "${OBJECT_STORE_BUCKET:-artifacts}"
+      OBJECT_STORE_ACCESS_KEY: "${OBJECT_STORE_ACCESS_KEY:-webutils}"
+      OBJECT_STORE_SECRET_KEY: "${OBJECT_STORE_SECRET_KEY:-change-me-in-production}"
+      ARTIFACT_TTL: "${ARTIFACT_TTL:-1h}"
+      RETENTION_WINDOW: "${RETENTION_WINDOW:-168h}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      object-store:
+        condition: service_healthy
+      diarization:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - audio-work:/work
+      - ./models:/models:ro
+    networks: [private]
+
+  diarization:
+    build: ./services/diarization
+    environment:
+      HF_TOKEN: "${HF_TOKEN:-}"
+      INTERNAL_TOKEN: "${INTERNAL_TOKEN:-development-only}"
+      OBJECT_STORE_ENDPOINT: "http://object-store:9000"
+      OBJECT_STORE_BUCKET: "${OBJECT_STORE_BUCKET:-artifacts}"
+      OBJECT_STORE_ACCESS_KEY: "${OBJECT_STORE_ACCESS_KEY:-webutils}"
+      OBJECT_STORE_SECRET_KEY: "${OBJECT_STORE_SECRET_KEY:-change-me-in-production}"
+    expose: ["8000"]
+    depends_on:
+      object-store:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - audio-work:/work:ro
+      - diarization-cache:/home/app/.cache
+    networks: [private]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: webutils
+      POSTGRES_USER: webutils
+      POSTGRES_PASSWORD: webutils
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webutils -d webutils"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [private]
+
+  object-store:
+    build: ./backend
+    command: ["/app/object-store"]
+    environment:
+      MINIO_ROOT_USER: "${OBJECT_STORE_ACCESS_KEY:-webutils}"
+      MINIO_ROOT_PASSWORD: "${OBJECT_STORE_SECRET_KEY:-change-me-in-production}"
+      OBJECT_STORE_DATA_DIR: "/data"
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      - object-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [private]
+
+volumes:
+  postgres-data: {}
+  object-data: {}
+  audio-work: {}
+  diarization-cache: {}
+
+networks:
+  public: {}
+  private:
+    internal: true

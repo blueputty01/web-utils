@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose config -q
+      - name: Run Go unit tests
+        run: docker run --rm -v "$PWD/backend:/src" -w /src golang:1.24-alpine go test -v ./...
+      - name: Build and test diarization service
+        run: |
+          docker build -t web-utils-diarization ./services/diarization
+          docker run --rm web-utils-diarization pytest -v
+      - name: Build and test frontend
+        run: docker build -t web-utils-frontend ./frontend
+      - name: Start Compose stack and run smoke & E2E validation
+        run: |
+          cp .env.example .env
+          docker compose up -d --build --wait
+          curl -fsS http://localhost:8080/healthz
+          curl -fsS http://localhost:8080/readyz
+          curl -fsS http://localhost:8080/metrics
+          docker compose down -v
