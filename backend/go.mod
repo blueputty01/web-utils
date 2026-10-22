@@ -1,0 +1,21 @@
+module github.com/example/web-utils/backend
+
+go 1.24
+
+require (
+	github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20261012050156-0c7be6963710
+	github.com/go-audio/wav v1.1.0
+	github.com/google/uuid v1.6.0
+	github.com/jackc/pgx/v5 v5.7.2
+)
+
+require (
+	github.com/go-audio/audio v1.0.0 // indirect
+	github.com/go-audio/riff v1.0.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
+)
