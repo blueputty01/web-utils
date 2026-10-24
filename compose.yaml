@@ -83,7 +83,10 @@ services:
     networks: [public, private]
 
   diarization:
-    build: ./services/diarization
+    build:
+      context: ./services/diarization
+      args:
+        INSTALL_PYANNOTE: "true"
     environment:
       HF_TOKEN: "${HF_TOKEN:-}"
       INTERNAL_TOKEN: "${INTERNAL_TOKEN:-development-only}"
