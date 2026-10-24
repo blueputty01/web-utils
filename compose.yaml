@@ -94,6 +94,8 @@ services:
       OBJECT_STORE_BUCKET: "${OBJECT_STORE_BUCKET:-artifacts}"
       OBJECT_STORE_ACCESS_KEY: "${OBJECT_STORE_ACCESS_KEY:-webutils}"
       OBJECT_STORE_SECRET_KEY: "${OBJECT_STORE_SECRET_KEY:-change-me-in-production}"
+      MPLCONFIGDIR: "/home/app/.cache/matplotlib"
+      PYTHONWARNINGS: "ignore::UserWarning"
     expose: ["8000"]
     depends_on:
       object-store:
