@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import hashlib
 import hmac
+import logging
 import os
 import tempfile
 import urllib.parse
@@ -9,6 +10,7 @@ import wave
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
+logger = logging.getLogger("uvicorn.error")
 app = FastAPI(title="Diarization Service")
 _pipeline = None
 
@@ -81,8 +83,20 @@ def pipeline():
     token = _secret_or_env("HF_TOKEN")
     if not token:
         raise RuntimeError("HF_TOKEN is required")
+    import torch
+    if hasattr(torch.serialization, "add_safe_globals"):
+        safe_globals = [torch.torch_version.TorchVersion]
+        try:
+            from pyannote.audio.core.task import Specifications, Problem, Resolution
+            safe_globals.extend([Specifications, Problem, Resolution])
+        except ImportError:
+            pass
+        torch.serialization.add_safe_globals(safe_globals)
     from pyannote.audio import Pipeline
-    _pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=token)
+    try:
+        _pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-community-1", token=token)
+    except TypeError:
+        _pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-community-1", use_auth_token=token)
     return _pipeline
 
 
@@ -177,6 +191,7 @@ def diarize(request: DiarizeRequest, x_internal_token: str = Header(default=""))
                     raise
         result = pipeline()(target_path)
     except Exception as error:
+        logger.exception("diarization failed")
         raise HTTPException(503, "diarization unavailable") from error
     finally:
         if temp_path and os.path.exists(temp_path):
@@ -185,7 +200,8 @@ def diarize(request: DiarizeRequest, x_internal_token: str = Header(default=""))
             except OSError:
                 pass
 
+    annotation = getattr(result, "speaker_diarization", result)
     return [
         Turn(start_ms=round(turn.start * 1000), end_ms=round(turn.end * 1000), speaker=speaker)
-        for turn, _, speaker in result.itertracks(yield_label=True)
+        for turn, _, speaker in annotation.itertracks(yield_label=True)
     ]
