@@ -80,7 +80,7 @@ services:
     volumes:
       - audio-work:/work
       - ./models:/models:ro
-    networks: [private]
+    networks: [public, private]
 
   diarization:
     build: ./services/diarization
@@ -105,7 +105,7 @@ services:
     volumes:
       - audio-work:/work:ro
       - diarization-cache:/home/app/.cache
-    networks: [private]
+    networks: [public, private]
 
   postgres:
     image: postgres:16-alpine
