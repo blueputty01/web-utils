@@ -46,8 +46,10 @@ func Transcribe(ctx context.Context, modelPath, wavPath string) ([]Segment, erro
 	if err != nil {
 		return nil, err
 	}
-	if err = engine.SetLanguage("auto"); err != nil {
-		return nil, err
+	if engine.IsMultilingual() {
+		if err = engine.SetLanguage("auto"); err != nil {
+			return nil, err
+		}
 	}
 	var result []Segment
 	err = engine.Process(audio, func() bool { return ctx.Err() == nil }, func(segment whisper.Segment) {
