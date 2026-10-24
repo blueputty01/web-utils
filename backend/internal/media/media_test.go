@@ -80,10 +80,10 @@ func TestNormalizeWithRunnerArguments(t *testing.T) {
 	if len(runner.calls) != 2 {
 		t.Fatalf("expected 2 subprocess invocations, got %d", len(runner.calls))
 	}
-	if runner.calls[0][0] != "yt-dlp" || !strings.Contains(strings.Join(runner.calls[0], " "), "--no-playlist") {
+	if runner.calls[0][0] != "yt-dlp" || !strings.Contains(strings.Join(runner.calls[0], " "), "--no-playlist") || !strings.Contains(strings.Join(runner.calls[0], " "), "-o "+out+".source") {
 		t.Fatalf("unexpected yt-dlp invocation: %v", runner.calls[0])
 	}
-	if runner.calls[1][0] != "ffmpeg" || !strings.Contains(strings.Join(runner.calls[1], " "), "-ar 16000") {
+	if runner.calls[1][0] != "ffmpeg" || !strings.Contains(strings.Join(runner.calls[1], " "), "-i "+out+".source") || !strings.Contains(strings.Join(runner.calls[1], " "), "-ar 16000") {
 		t.Fatalf("unexpected ffmpeg invocation: %v", runner.calls[1])
 	}
 }

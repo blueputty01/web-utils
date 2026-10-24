@@ -54,11 +54,14 @@ func NormalizeWithRunner(ctx context.Context, sourceURL, output string, runner R
 	runCtx, cancel := context.WithTimeout(ctx, DefaultAcquireLimit)
 	defer cancel()
 
-	// yt-dlp supports platform pages and direct URLs; FFmpeg normalizes only the resolved media.
-	if out, err := runner.Run(runCtx, "yt-dlp", "--no-playlist", "--max-filesize", "500M", "--get-id", normalizedURL); err != nil {
+	// yt-dlp downloads the best audio stream (supporting both platform pages and direct media URLs);
+	// FFmpeg normalizes the downloaded stream to 16 kHz mono PCM WAV.
+	rawMedia := output + ".source"
+	defer os.Remove(rawMedia)
+	if out, err := runner.Run(runCtx, "yt-dlp", "--no-playlist", "--max-filesize", "500M", "-f", "bestaudio/best", "--no-part", "--force-overwrites", "-o", rawMedia, normalizedURL); err != nil {
 		return fmt.Errorf("source resolution failed: %s", strings.TrimSpace(string(out)))
 	}
-	if out, err := runner.Run(runCtx, "ffmpeg", "-nostdin", "-y", "-i", normalizedURL, "-t", MaxMediaDurationSec, "-vn", "-ac", "1", "-ar", "16000", "-acodec", "pcm_s16le", output); err != nil {
+	if out, err := runner.Run(runCtx, "ffmpeg", "-nostdin", "-y", "-i", rawMedia, "-t", MaxMediaDurationSec, "-vn", "-ac", "1", "-ar", "16000", "-acodec", "pcm_s16le", output); err != nil {
 		return fmt.Errorf("audio extraction failed: %s", strings.TrimSpace(string(out)))
 	}
 	return nil
