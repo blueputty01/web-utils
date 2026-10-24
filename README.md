@@ -27,8 +27,12 @@ Open `http://localhost:3000/utilities/video-transcription`. The API listens on `
 
 To run with live ML models instead of the deterministic development pipeline:
 
-1. Place a Whisper GGML model (e.g., `ggml-base.en.bin`) in `./models/` and set `WHISPER_MODEL_PATH=/models/ggml-base.en.bin`.
-2. Supply `HF_TOKEN` and `GEMINI_API_KEY` (via `.env` or `*_FILE` secret mounts) and set `FAKE_PIPELINE=false`.
+1. Download a Whisper GGML model (e.g., `ggml-base.en.bin`) into `./models/` and set `WHISPER_MODEL_PATH=/models/ggml-base.en.bin`:
+   ```bash
+   curl -L --fail -o models/ggml-base.en.bin \
+     https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
+   ```
+2. Supply `HF_TOKEN` (having accepted the conditions for `pyannote/speaker-diarization-community-1` on Hugging Face) and `GEMINI_API_KEY` (via `.env` or `*_FILE` secret mounts) and set `FAKE_PIPELINE=false`.
 3. For NVIDIA GPU acceleration on diarization, run with `--profile gpu`.
 
 ## Operational Runbook & Observability

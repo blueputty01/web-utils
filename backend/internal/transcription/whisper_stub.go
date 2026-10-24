@@ -28,7 +28,7 @@ func Transcribe(ctx context.Context, modelPath, wavPath string) ([]Segment, erro
 	}
 	v := strings.ToLower(strings.TrimSpace(os.Getenv("FAKE_WHISPER_ENABLED")))
 	p := strings.ToLower(strings.TrimSpace(os.Getenv("FAKE_PIPELINE")))
-	if v == "true" || v == "1" || p == "true" || p == "1" || modelPath != "" {
+	if v == "true" || v == "1" || p == "true" || p == "1" {
 		return []Segment{
 			{StartMS: 0, EndMS: 2000, Text: "Welcome to the video transcription utility demo."},
 			{StartMS: 2000, EndMS: 4500, Text: "We are testing speaker diarization and Gemini formatting."},

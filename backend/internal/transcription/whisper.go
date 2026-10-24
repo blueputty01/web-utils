@@ -27,8 +27,11 @@ func Transcribe(ctx context.Context, modelPath, wavPath string) ([]Segment, erro
 	if decoder.NumChans != 1 || int(decoder.SampleRate) != whisper.SampleRate {
 		return nil, fmt.Errorf("expected mono %d Hz WAV", whisper.SampleRate)
 	}
-	if fakeWhisperEnabled() || modelMissing(modelPath) {
+	if fakeWhisperEnabled() {
 		return syntheticSegments(), nil
+	}
+	if modelMissing(modelPath) {
+		return nil, fmt.Errorf("whisper model file missing or empty at %q", modelPath)
 	}
 	audio := make([]float32, len(buffer.Data))
 	for i, sample := range buffer.Data {
